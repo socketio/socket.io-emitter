@@ -45,6 +45,28 @@ describe('emitter', function() {
     });
   });
 
+  it('should be able to send customRequest', function (done) {
+      srv = http();
+      var sio = io(srv, {adapter: redisAdapter()});
+      srv.listen();
+
+      var cli = client(srv, { forceNew: true });
+      var emitter = ioe({ host: 'localhost', port: '6379' });
+
+      var payload = {
+          a: 'b'
+      };
+
+      cli.on('connect', function () {
+          emitter.customRequest(payload);
+      });
+
+      sio.of('/').adapter.customHook = (data) => {
+          expect(data).to.eql(payload);
+          done();
+      };
+  });
+
   describe('in namespaces', function(){
     beforeEach(function() {
       var pub = redis.createClient();

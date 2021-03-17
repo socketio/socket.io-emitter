@@ -3,6 +3,7 @@
  * Module dependencies.
  */
 
+var uid2 = require('uid2');
 var client = require('redis').createClient;
 var parser = require('socket.io-parser');
 var msgpack = require('notepack.io');
@@ -72,6 +73,7 @@ function Emitter(redis, prefix, nsp){
   this.prefix = prefix;
   this.nsp = nsp;
   this.channel = this.prefix + '#' + nsp + '#';
+  this.requestChannel = this.prefix + '-request#' + nsp + '#';
 
   this._rooms = [];
   this._flags = {};
@@ -154,4 +156,35 @@ Emitter.prototype.emit = function(){
   this._except = [];
 
   return this;
+};
+
+/**
+ * Request types, for messages between nodes
+ */
+
+var requestTypes = {
+    clients: 0,
+    clientRooms: 1,
+    allRooms: 2,
+    remoteJoin: 3,
+    remoteLeave: 4,
+    customRequest: 5,
+    remoteDisconnect: 6
+};
+
+/**
+ * Sends a new custom request to other nodes
+ *
+ * @param {Object} payload
+ * @api public
+ */
+Emitter.prototype.customRequest = function(payload){
+    var requestid = uid2(6);
+    var request = JSON.stringify({
+        requestid : requestid,
+        type: requestTypes.customRequest,
+        data: payload
+    });
+
+    this.redis.publish(this.requestChannel, request);
 };

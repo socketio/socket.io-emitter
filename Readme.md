@@ -148,6 +148,10 @@ Specifies a specific `room` that you want to emit to.
 
 Specifies a specific namespace that you want to emit to.
 
+### Emitter#customRequest(payload:Object)
+
+Sends custom request to request channel for socket.io-redis server
+
 ## License
 
 MIT
